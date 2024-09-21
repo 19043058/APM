@@ -1,0 +1,23 @@
+- name: Update APT cache
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+  become: yes
+
+- name: Start and enable Nginx service
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Configure UFW to allow Nginx HTTP
+  ufw:
+    rule: allow
+    name: 'Nginx HTTP'
+  become: yes
