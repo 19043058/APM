@@ -27,14 +27,6 @@ resource "proxmox_vm_qemu" "vm" {
 
   clone = var.template_name
 
-  cloud_init {
-    user        = "ubuntu"
-    ssh_keys    = [var.ssh_public_key]
-    ip_config {
-      ipv4 = "dhcp"
-    }
-  }
-
   lifecycle {
     ignore_changes = [
       network[0].macaddr  # Ignore changes to MAC address
