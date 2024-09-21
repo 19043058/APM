@@ -49,14 +49,3 @@ variable "proxmox_token_secret" {
   type        = string
   sensitive   = true
 }
-
-variable "vm" {
-  description = "Configuration for the VM"
-  type = object({
-    vm_id        = number
-    vm_name      = string
-    vm_memory    = number
-    vm_cores     = number
-    vm_disk_size = string
-  })
-}
