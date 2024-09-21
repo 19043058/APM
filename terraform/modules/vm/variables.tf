@@ -50,26 +50,6 @@ variable "proxmox_token_secret" {
   sensitive   = true
 }
 
-variable "ssh_public_key" {
-  description = "SSH public key for VM access"
-  type        = string
-}
-
-variable "template_name" {
-  description = "Name of the Proxmox VM template to clone"
-  type        = string
-}
-
-variable "node_name" {
-  description = "Proxmox node name"
-  type        = string
-}
-
-variable "network_bridge" {
-  description = "Network bridge to use"
-  type        = string
-}
-
 variable "vm" {
   description = "Configuration for the VM"
   type = object({
