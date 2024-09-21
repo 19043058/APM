@@ -1,12 +1,11 @@
 terraform {
-  required_version = ">= 1.0.0"
-
   required_providers {
     proxmox = {
-      source  = "Telmate/proxmox"
+      source = "Telmate/proxmox"
       version = "3.0.1-rc4"
     }
-  }
+  
+}
 
   # Local backend for storing state securely
   backend "local" {
