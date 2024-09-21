@@ -10,4 +10,7 @@ module "nginx_vm" {
   network_bridge  = var.network_bridge
   ssh_public_key  = var.ssh_public_key
   template_name   = var.template_name
+  proxmox_url          = var.proxmox_url
+  proxmox_token_id     = var.proxmox_token_id
+  proxmox_token_secret = var.proxmox_token_secret
 }
