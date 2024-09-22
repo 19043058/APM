@@ -4,18 +4,25 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   target_node = "ardemium"               # Proxmox node name
   clone       = "ubuntu-cloud-init-template"  # Clone the Cloud-Init template VM
 
-  memory      = 2048                     # Memory in MB
-  cores       = 2                        # Number of CPU cores
-  sockets     = 1                        # Number of CPU sockets
+# VM hardware configuration
+  storage  = "local-lvm"
+  cores    = 2
+  sockets  = 1
+  memory   = 2048
+  disk_gb  = 10
 
-  # Cloud-Init specific options
-  ciuser     = "ubuntu"                  # Cloud-init username
-  cipassword = "password"                # Cloud-init password (replace with a secure password)
+  # Cloud-Init basic configuration
+  ciuser     = "ubuntu"            # Cloud-Init user
+  cipassword = "ubuntu"            # Password for the user
+  ipconfig0  = "ip=dhcp"           # Dynamic IP (DHCP)
 
-  # Network configuration using Cloud-Init
-  ipconfig0   = "ip=dhcp"                # Assign IP address dynamically via DHCP
+  # Network interface
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"              # Proxmox bridge (usually vmbr0)
+  }
 
-  # Define disk settings (Cloud-Init disk will be auto-configured)
+  # Cloud-Init disk (mandatory for passing user data)
   disks {
     ide {
       ide2 {
@@ -25,16 +32,4 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
       }
     }
   }
-
-  # Network interface for the VM
-  network {
-    model  = "virtio"                    # Network card model (virtio is recommended)
-    bridge = "vmbr0"                     # Proxmox bridge (usually vmbr0)
-  }
-
-  # Enable QEMU Guest Agent for better VM control
-  agent  = 1
-
-  # Optional: Boot settings (VM will boot from the disk created via the template)
-  # boot = "order=scsi0"
 }
