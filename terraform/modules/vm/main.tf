@@ -1,54 +1,59 @@
-# Define a Proxmox QEMU Virtual Machine
+# Define a Proxmox QEMU Virtual Machine using the Cloud-Init template
 resource "proxmox_vm_qemu" "ubuntu_vm" {
-  name        = "ubuntu-vm"               # VM name
-  target_node = "ardemium"           # Proxmox node name
-  memory      = 2048                      # Memory in MB
-  cores       = 2                         # Number of CPU cores
-  sockets     = 1                         # Number of CPU sockets
+  name        = "ubuntu-vm"              # VM name
+  target_node = "ardemium"               # Proxmox node name
+  clone       = "ubuntu-cloud-init-template"  # Clone the Cloud-Init template VM
 
-  # CPU type (optional)
-  # cpu         = "host"                   # Use "host" for better performance
+  memory      = 2048                     # Memory in MB
+  cores       = 2                        # Number of CPU cores
+  sockets     = 1                        # Number of CPU sockets
+  pool        = "default"                # (Optional) Specify resource pool
 
-  # Disk configuration with local ISO
+  # Network configuration using Cloud-Init
+  ipconfig0   = "ip=dhcp"                # Assign IP address dynamically via DHCP
+
+  # Cloud-Init specific options
+  ciuser     = "ubuntu"                  # Cloud-init username
+  cipassword = "password"                # Cloud-init password
+  sshkeys    = <<EOF
+  ssh-rsa AABB3NzaC1kj...your-ssh-public-key
+  EOF
+
+  # Define disk settings (Cloud-Init disk will be auto-configured)
   disks {
     ide {
       ide2 {
-        cdrom {
-          iso = "local:iso/ubuntu-24.04.1-live-server-amd64.iso"  # Path to your ISO
+        cloudinit {
+          storage = "local-lvm"
         }
       }
     }
   }
 
-  # Network interface
+  # Network interface for the VM
   network {
-    bridge = "vmbr0"                      # Proxmox bridge (usually vmbr0)
-    # model  = "virtio"                   # Network card model (optional)
+    bridge = "vmbr0"                     # Proxmox bridge (usually vmbr0)
   }
 
-  # Boot settings
-  boot = "order=ide2"                     # Boot from CD-ROM (the ISO)
-
-  # Start VM automatically after Proxmox boot (optional)
-  # onboot = true
-
-  # Enable QEMU Guest Agent (optional, requires agent installation in guest OS)
+  # Enable QEMU Guest Agent for better VM control
   agent  = 1
 
-  # BIOS type (optional, default is "seabios")
-  # bios   = "seabios"
+  # Optional: Boot settings (VM will boot from the disk created via the template)
+  boot = "order=scsi0"
 
-  # Provisioners and connection info (optional if not using Terraform provisioners)
-  # ssh_user        = "ubuntu"            # SSH user for provisioners
-  # ssh_private_key = file("~/.ssh/id_rsa")  # SSH private key for provisioners
+  # Optional: Remote-exec provisioner to run post-provisioning commands
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y nginx",
+    ]
 
-  # OS type (optional, used for certain optimizations)
-  # os_type = "ubuntu"
-
-  # Remove if you are not using cloud-init or custom provisioning
-  ciuser     = "ubuntu"                 # Cloud-init username
-  cipassword = "password"               # Cloud-init password (sensitive)
-  # ipconfig0  = "ip=dhcp"                # Network configuration for cloud-init
-
-  # Other optional settings can be added here
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("~/.ssh/id_rsa")   # Replace with the path to your SSH private key
+      host        = self.ipv4_address
+      port        = 22
+    }
+  }
 }
