@@ -1,5 +1,5 @@
 module "my_vm" {
-  source = "./path_to_module"
+  source = "./modules/vm"
 
   vm_name          = "my-new-vm"
   vm_id            = 100  # Optional; set to 0 or omit to auto-assign
