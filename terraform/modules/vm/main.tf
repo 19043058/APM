@@ -1,54 +1,37 @@
-# Define a Proxmox QEMU Virtual Machine
 resource "proxmox_vm_qemu" "ubuntu_vm" {
-  name        = "ubuntu-vm"               # VM name
-  target_node = "ardemium"           # Proxmox node name
-  memory      = 2048                      # Memory in MB
-  cores       = 2                         # Number of CPU cores
-  sockets     = 1                         # Number of CPU sockets
+  name        = "ubuntu-cloud-init-vm"
+  target_node = "proxmox-node1"
+  memory      = 2048
+  cores       = 2
+  sockets     = 1
+  scsihw      = "virtio-scsi-pci"
+  bootdisk    = "scsi0"
 
-  # CPU type (optional)
-  # cpu         = "host"                   # Use "host" for better performance
-
-  # Disk configuration with local ISO
+  # Disk settings using the cloud-init image
   disks {
-    ide {
-      ide2 {
-        cdrom {
-          iso = "local:iso/ubuntu-24.04.1-live-server-amd64.iso"  # Path to your ISO
-        }
-      }
+    scsi0 {
+      size = "10G"
+      storage = "local-lvm"
+      file = "local-lvm:vm-9000-disk-0"  # Reference to the disk created in Proxmox
     }
   }
 
-  # Network interface
+  # Cloud-init configuration
+  ciuser     = "ubuntu"
+  cipassword = "your-password"
+  ipconfig0  = "ip=dhcp"
+  sshkeys    = file("~/.ssh/id_rsa.pub")
+
   network {
-    bridge = "vmbr0"                      # Proxmox bridge (usually vmbr0)
-    model  = "virtio"                     # Network card model (required)
+    bridge = "vmbr0"
   }
 
-  # Boot settings
-  boot = "order=ide2"                     # Boot from CD-ROM (the ISO)
+  # Enable QEMU Guest Agent
+  agent = 1
 
-  # Start VM automatically after Proxmox boot (optional)
-  # onboot = true
+  # Start VM after Proxmox reboots
+  onboot = true
 
-  # Enable QEMU Guest Agent (optional, requires agent installation in guest OS)
-  # agent  = 1
-
-  # BIOS type (optional, default is "seabios")
-  # bios   = "seabios"
-
-  # Provisioners and connection info (optional if not using Terraform provisioners)
-  # ssh_user        = "ubuntu"            # SSH user for provisioners
-  # ssh_private_key = file("~/.ssh/id_rsa")  # SSH private key for provisioners
-
-  # OS type (optional, used for certain optimizations)
-  # os_type = "ubuntu"
-
-  # Remove if you are not using cloud-init or custom provisioning
-  # ciuser     = "ubuntu"                 # Cloud-init username
-  # cipassword = "password"               # Cloud-init password (sensitive)
-  # ipconfig0  = "ip=dhcp"                # Network configuration for cloud-init
-
-  # Other optional settings can be added here
+  # Boot from the disk
+  boot = "order=scsi0"
 }
