@@ -5,7 +5,7 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   clone       = "ubuntu-cloud-init-template"  # Clone the Cloud-Init template VM
 
 # VM hardware configuration
-  storage  = "local-lvm"
+  storage  = "local"
   cores    = 2
   sockets  = 1
   memory   = 2048
@@ -14,22 +14,6 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   # Cloud-Init basic configuration
   ciuser     = "ubuntu"            # Cloud-Init user
   cipassword = "ubuntu"            # Password for the user
-  ipconfig0  = "ip=dhcp"           # Dynamic IP (DHCP)
 
-  # Network interface
-  network {
-    model  = "virtio"
-    bridge = "vmbr0"              # Proxmox bridge (usually vmbr0)
-  }
-
-  # Cloud-Init disk (mandatory for passing user data)
-  disks {
-    ide {
-      ide2 {
-        cloudinit {
-          storage = "local-lvm"
-        }
-      }
-    }
-  }
+  os_type   = "cloud-init"
 }
