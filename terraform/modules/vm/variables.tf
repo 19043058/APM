@@ -1,38 +1,100 @@
-variable "vm_id" {
-  type = number
-}
-
 variable "vm_name" {
-  type = string
+  description = "The name of the VM"
+  type        = string
 }
 
-variable "vm_memory" {
-  type = number
+variable "target_node" {
+  description = "The Proxmox node on which to place the VM"
+  type        = string
+  default     = "ardemium"
 }
 
-variable "vm_cores" {
-  type = number
+variable "vm_id" {
+  description = "The ID of the VM in Proxmox. If not provided, the next available ID will be used."
+  type        = number
+  default     = 0
 }
 
-variable "vm_disk_size" {
-  type = string
+variable "memory" {
+  description = "Amount of memory to allocate to the VM in MB"
+  type        = number
+  default     = 2048
 }
 
-variable "node_name" {
-  type = string
+variable "cores" {
+  description = "Number of CPU cores per socket"
+  type        = number
+  default     = 2
 }
 
-variable "network_bridge" {
-  type = string
+variable "sockets" {
+  description = "Number of CPU sockets"
+  type        = number
+  default     = 1
 }
 
-variable "ssh_public_key" {
-  type = string
+variable "ipconfig0" {
+  description = "IP configuration for the first network interface"
+  type        = string
+  default     = "ip=dhcp"
 }
 
-variable "template_name" {
-  type = string
+variable "nameserver" {
+  description = "DNS nameserver for the VM"
+  type        = string
+  default     = "8.8.8.8"
 }
+
+variable "sshkeys" {
+  description = "SSH public keys to add to the VM"
+  type        = string
+  default     = ""
+}
+
+variable "ciuser" {
+  description = "Cloud-init username"
+  type        = string
+  default     = "ubuntu"
+}
+
+variable "cipassword" {
+  description = "Cloud-init password"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "bridge" {
+  description = "The bridge to attach the network interface to"
+  type        = string
+  default     = "vmbr0"
+}
+
+variable "storage" {
+  description = "The storage pool for the VM disks"
+  type        = string
+  default     = "local-lvm"
+}
+
+variable "disk_size" {
+  description = "Size of the VM disk"
+  type        = string
+  default     = "20G"
+}
+
+variable "ssh_user" {
+  description = "The SSH user for provisioners"
+  type        = string
+  default     = "ubuntu"
+}
+
+variable "ssh_private_key" {
+  description = "Private key for SSH access"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 
 variable "proxmox_url" {
   description = "Proxmox API URL"
