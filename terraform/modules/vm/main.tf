@@ -10,9 +10,8 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   # Disk settings using the cloud-init image
   disks {
     scsi0 {
-      size = "10G"
+      size    = "10G"
       storage = "local-lvm"
-      file = "local-lvm:vm-9000-disk-0"  # Reference to the disk created in Proxmox
     }
   }
 
@@ -20,10 +19,11 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   ciuser     = "ubuntu"
   cipassword = "your-password"
   ipconfig0  = "ip=dhcp"
-  sshkeys    = file("~/.ssh/id_rsa.pub")
 
+  # Network settings with the required model
   network {
     bridge = "vmbr0"
+    model  = "virtio"  # Specify the network model
   }
 
   # Enable QEMU Guest Agent
