@@ -6,7 +6,6 @@ on:
       - main
 
 jobs:
-
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
@@ -16,12 +15,16 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v16
 
+      - name: Verify Nix Installation
+        run: nix-env --version
+
       - name: Install nixos-generators
-        run: nix-env -f https://github.com/nix-community/nixos-generators/archive/master.tar.gz -i
+        run: nix profile install github:nix-community/nixos-generators
+
+      - name: Add nix profile to PATH
+        run: echo "$HOME/.nix-profile/bin" >> $GITHUB_PATH
 
       - name: Build NixOS QCOW2 Image
-        env:
-          PATH: $HOME/.nix-profile/bin:$PATH
         run: nixos-generate -I nixpkgs=channel:nixos-unstable -f qcow -c ./nixos/configuration.nix -o ./nixos.qcow2
 
       - name: Install Proxmoxer
