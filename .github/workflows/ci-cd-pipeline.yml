@@ -32,7 +32,7 @@ jobs:
 
       - name: Upload QCOW2 Image to Proxmox
         env:
-          PROXMOX_HOST: ${{ secrets.PROXMOX_HOST }}
+          PROXMOX_URL: ${{ secrets.PROXMOX_URL }}
           PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
           PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
           NODE_NAME: 'ardemium'
