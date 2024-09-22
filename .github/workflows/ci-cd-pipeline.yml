@@ -39,7 +39,7 @@ jobs:
           NODE_NAME: 'ardemium'
           STORAGE_NAME: 'local'
         run: |
-          curl --verbose -k -X POST "https://145.53.24.241:8006/api2/json/nodes/ardemium/storage/local/upload" -H 'Authorization: PVEAPIToken=terraform-prov@pve!mytoken=e9a45187-2967-4879-b451-c75b2214943f' -F content=iso -F filename=@test.iso
+          curl --verbose -k -X POST "https://145.53.24.241:8006/api2/json/nodes/ardemium/storage/local/upload" -H 'Authorization: PVEAPIToken=terraform-prov@pve!mytoken=e9a45187-2967-4879-b451-c75b2214943f' -F content=iso -F filename=@nixos.iso
 
 
   terraform:
