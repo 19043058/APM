@@ -6,42 +6,6 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Install Nix
-        uses: cachix/install-nix-action@v16
-
-      - name: Verify Nix Installation
-        run: nix-env --version
-
-      - name: Install nixos-generators
-        run: nix profile install github:nix-community/nixos-generators
-
-      - name: Add nix profile to PATH
-        run: echo "$HOME/.nix-profile/bin" >> $GITHUB_PATH
-
-      # Generate ISO Image instead of QCOW2
-      - name: Build NixOS ISO Image
-        run: |
-          NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/74e2faf5965a12e8fa5cff799b1b19c6cd26b0e3.tar.gz \
-          nix-shell -p nixos-generators --run "nixos-generate --format iso --configuration ./nixos/configuration.nix -o ./nixos.iso"
-
-      # Upload ISO Image to Proxmox
-      - name: Upload ISO Image to Proxmox
-        env:
-          PROXMOX_URL: ${{ secrets.PROXMOX_URL }}
-          PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
-          PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-          NODE_NAME: 'ardemium'
-          STORAGE_NAME: 'local'
-        run: |
-          curl --verbose -k -X POST "https://145.53.24.241:8006/api2/json/nodes/ardemium/storage/big/upload" -H 'Authorization: PVEAPIToken=terraform-prov@pve!mytoken=e9a45187-2967-4879-b451-c75b2214943f' -H "Transfer-Encoding: chunked" -F content=iso -F filename=@nixos.iso
-
-
   terraform:
     name: Terraform Provisioning
     needs: build-and-deploy
@@ -72,7 +36,7 @@ jobs:
             -var="proxmox_token_id=${{ env.PROXMOX_TOKEN_ID }}" \
             -var="proxmox_token_secret=${{ env.PROXMOX_TOKEN_SECRET }}" \
             -var="ssh_public_key=${{ env.SSH_PUBLIC_KEY }}" \
-            -var="template_name=nixos.iso" \
+            -var="template_name=ubuntu-24.04.1-live-server-amd64.iso" \
             -var="node_name=pve" \
             -var="network_bridge=vmbr0" \
             -var='vm={"vm_id":100,"vm_name":"nginx-server","vm_memory":2048,"vm_cores":2,"vm_disk_size":"20G"}'
@@ -87,59 +51,3 @@ jobs:
         id: tf_outputs
         working-directory: ./terraform
         run: terraform output -json > ../ansible/terraform_outputs.json
-
-  ansible:
-    name: Ansible Configuration
-    needs: terraform
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Install Ansible
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y ansible
-
-      - name: Set up SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/nginx_ansible_key
-          chmod 600 ~/.ssh/nginx_ansible_key
-
-      - name: Generate Inventory
-        run: |
-          NGINX_IP=$(jq -r '.nginx_vm_ip.value' ./ansible/terraform_outputs.json)
-          echo "[nginx_server]" > ./ansible/inventory/hosts.ini
-          echo "nginx ansible_host=$NGINX_IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/nginx_ansible_key" >> ./ansible/inventory/hosts.ini
-
-      - name: Run Ansible Playbook
-        working-directory: ./ansible
-        env:
-          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
-        run: ansible-playbook playbooks/site.yml --vault-password-file <(echo "${ANSIBLE_VAULT_PASSWORD}")
-
-  verify:
-    name: Verification
-    needs: ansible
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Install cURL and jq
-        run: sudo apt-get install -y curl jq
-
-      - name: Load Terraform Outputs
-        run: |
-          NGINX_IP=$(jq -r '.nginx_vm_ip.value' ansible/terraform_outputs.json)
-          echo "Nginx Server IP: $NGINX_IP"
-
-      - name: Verify Nginx
-        run: |
-          status_code=$(curl -o /dev/null -s -w "%{http_code}\n" "http://$NGINX_IP")
-          echo "Nginx HTTP status code: $status_code"
-          if [ "$status_code" -ne 200 ]; then
-            echo "Nginx server is not responding correctly."
-            exit 1
-          fi
