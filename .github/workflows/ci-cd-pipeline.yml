@@ -32,13 +32,12 @@ jobs:
 
       - name: Upload QCOW2 Image to Proxmox
         env:
-          PROXMOX_URL: 'https://145.53.24.241:8006/api2/json'
           PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
           PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
           NODE_NAME: 'ardemium'
           STORAGE_NAME: 'local'
         run: |
-          curl -k -X POST "${{ env.PROXMOX_URL }}/nodes/${{ env.NODE_NAME }}/storage/${{ env.STORAGE_NAME }}/upload" \
+          curl -k -X POST "https://145.53.24.241:8006/api2/json/nodes/${{ env.NODE_NAME }}/storage/${{ env.STORAGE_NAME }}/upload" \
                -H 'Authorization: PVEAPIToken=${{ env.PROXMOX_TOKEN_ID }}=${{ env.PROXMOX_TOKEN_SECRET }}' \
                -F content=vztmpl \
                -F filename=@nixos.qcow2
