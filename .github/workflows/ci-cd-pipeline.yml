@@ -48,6 +48,7 @@ jobs:
         run: |
           python proxmox_template.py
 
+  terraform:
     name: Terraform Provisioning
     runs-on: ubuntu-latest
     env:
