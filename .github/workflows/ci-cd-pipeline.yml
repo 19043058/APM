@@ -8,7 +8,6 @@ on:
 jobs:
   terraform:
     name: Terraform Provisioning
-    needs: build-and-deploy
     runs-on: ubuntu-latest
     env:
       TF_LOG: ERROR
