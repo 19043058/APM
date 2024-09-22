@@ -13,9 +13,9 @@ resource "proxmox_vm_qemu" "vm" {
   target_node = var.node_name
 
   disk {
-    slot     = 0
+    slot     = "scsi0"
     size     = var.vm_disk_size
-    type     = "scsi"
+    type     = "disk"
     storage  = "local-lvm"
     iothread = true
   }
