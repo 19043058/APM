@@ -1,6 +1,6 @@
 resource "proxmox_vm_qemu" "ubuntu_vm" {
   name        = "ubuntu-cloud-init-vm"
-  target_node = "proxmox-node1"
+  target_node = "ardemium"
   memory      = 2048
   cores       = 2
   sockets     = 1
