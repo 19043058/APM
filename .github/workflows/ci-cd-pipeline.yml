@@ -6,7 +6,48 @@ on:
       - main
 
 jobs:
-  terraform:
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v16
+
+      - name: Install nixos-generators
+        run: nix-env -iA nixos-generators -f https://github.com/nix-community/nixos-generators/archive/master.tar.gz
+
+      - name: Build NixOS QCOW2 Image
+        run: nixos-generate -f qcow -c ./nixos/configuration.nix -o ./nixos.qcow2
+
+      - name: Install Proxmoxer
+        run: pip install proxmoxer
+
+      - name: Upload QCOW2 Image to Proxmox
+        env:
+          PROXMOX_HOST: ${{ secrets.PROXMOX_HOST }}
+          PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
+          PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
+          NODE_NAME: 'pve'  # Replace with your node name
+          STORAGE_NAME: 'local'  # Replace with your storage name
+        run: |
+          curl -k -X POST "https://$PROXMOX_HOST:8006/api2/json/nodes/$NODE_NAME/storage/$STORAGE_NAME/upload" \
+               -H "Authorization: PVEAPIToken=$PROXMOX_TOKEN_ID=$PROXMOX_TOKEN_SECRET" \
+               -F content=vztmpl \
+               -F filename=@nixos.qcow2
+
+      - name: Create Proxmox VM Template
+        env:
+          PROXMOX_HOST: ${{ secrets.PROXMOX_HOST }}
+          PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
+          PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
+          NODE_NAME: 'pve'  # Replace with your node name
+          STORAGE_NAME: 'local'  # Replace with your storage name
+        run: |
+          python proxmox_template.py
+
     name: Terraform Provisioning
     runs-on: ubuntu-latest
     env:
@@ -35,7 +76,7 @@ jobs:
             -var="proxmox_token_id=${{ env.PROXMOX_TOKEN_ID }}" \
             -var="proxmox_token_secret=${{ env.PROXMOX_TOKEN_SECRET }}" \
             -var="ssh_public_key=${{ env.SSH_PUBLIC_KEY }}" \
-            -var="template_name=ubuntu-22.04-cloudinit-template" \
+            -var="template_name=nixos-template" \
             -var="node_name=pve" \
             -var="network_bridge=vmbr0" \
             -var='vm={"vm_id":100,"vm_name":"nginx-server","vm_memory":2048,"vm_cores":2,"vm_disk_size":"20G"}'
