@@ -42,10 +42,12 @@ jobs:
           NODE_NAME: 'ardemium'
           STORAGE_NAME: 'local'
         run: |
-          curl --verbose -k -X POST "${{ env.PROXMOX_URL }}/api2/json/nodes/${{ env.NODE_NAME }}/storage/${{ env.STORAGE_NAME }}/upload" \
-          -H "Authorization: PVEAPIToken=${{ env.PROXMOX_TOKEN_ID }}=${{ env.PROXMOX_TOKEN_SECRET }}" \
-          -F content=iso -F filename=@nixos.iso
-
+          curl --verbose -k -X POST "${PROXMOX_URL}/api2/json/nodes/${NODE_NAME}/storage/${STORAGE_NAME}/upload" \
+          -H 'Authorization: PVEAPIToken='"${PROXMOX_TOKEN_ID}"'='"${PROXMOX_TOKEN_SECRET}" \
+          -F content=iso \
+          -F filename=@nixos.iso \
+          --no-keepalive \
+          --http1.1
 
       - name: Create Proxmox VM Template
         env:
