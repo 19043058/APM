@@ -30,21 +30,6 @@ jobs:
           NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/74e2faf5965a12e8fa5cff799b1b19c6cd26b0e3.tar.gz \
           nix-shell -p nixos-generators --run "nixos-generate --format iso --configuration ./nixos/configuration.nix -o ./nixos.iso"
 
-      # Echo task for debugging
-      - name: Show Curl Command
-        env:
-          PROXMOX_URL: ${{ secrets.PROXMOX_URL }}
-          PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
-          PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-          NODE_NAME: 'ardemium'
-          STORAGE_NAME: 'local'
-        run: |
-          echo "Curl command to be executed:"
-          echo "curl --verbose -k -X POST \"$PROXMOX_URL/nodes/$NODE_NAME/storage/$STORAGE_NAME/upload\" \\"
-          echo "  -H 'Authorization: PVEAPIToken=$PROXMOX_TOKEN_ID=$PROXMOX_TOKEN_SECRET' \\"
-          echo "  -F content=iso \\"
-          echo "  -F filename=@nixos.iso"
-
       # Upload ISO Image to Proxmox
       - name: Upload ISO Image to Proxmox
         env:
@@ -55,9 +40,10 @@ jobs:
           STORAGE_NAME: 'local'
         run: |
           curl --verbose -k -X POST "$PROXMOX_URL/nodes/$NODE_NAME/storage/$STORAGE_NAME/upload" \
-          -H "Authorization: PVEAPIToken=$PROXMOX_TOKEN_ID=$PROXMOX_TOKEN_SECRET" \
-          -F content=iso \
-          -F filename=@nixos.iso
+            -H "Authorization: PVEAPIToken $PROXMOX_TOKEN_ID=$PROXMOX_TOKEN_SECRET" \
+            -F content=iso \
+            -F filename=@nixos.iso
+
 
   terraform:
     name: Terraform Provisioning
