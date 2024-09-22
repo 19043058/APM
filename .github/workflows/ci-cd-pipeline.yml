@@ -31,7 +31,7 @@ jobs:
           nix-shell -p nixos-generators --run "nixos-generate --format iso --configuration ./nixos/configuration.nix -o ./nixos.iso"
 
       # Echo task for debugging
-      - name: Debug: Show Curl Command
+      - name: Show Curl Command
         env:
           PROXMOX_URL: ${{ secrets.PROXMOX_URL }}
           PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
