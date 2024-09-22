@@ -39,16 +39,16 @@ jobs:
           STORAGE_NAME: 'local'
         run: |
           curl -k -X POST "${{ env.PROXMOX_URL }}nodes/${{ env.NODE_NAME }}/storage/${{ env.STORAGE_NAME }}/upload" \
-               -H "Authorization: PVEAPIToken=${{ env.PROXMOX_TOKEN_ID }}=${{ env.PROXMOX_TOKEN_SECRET }}" \
+               -H 'Authorization: PVEAPIToken=${{ env.PROXMOX_TOKEN_ID }}=${{ env.PROXMOX_TOKEN_SECRET }}' \
                -F content=vztmpl \
                -F filename=@nixos.qcow2
 
       - name: Create Proxmox VM Template
         env:
-          PROXMOX_HOST: ${{ secrets.PROXMOX_HOST }}
+          PROXMOX_URL: ${{ secrets.PROXMOX_URL }}
           PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
           PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-          NODE_NAME: 'pve'
+          NODE_NAME: 'ardemium'
           STORAGE_NAME: 'local'
         run: |
           python proxmox_template.py
