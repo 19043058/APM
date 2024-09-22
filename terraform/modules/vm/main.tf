@@ -1,25 +1,27 @@
 resource "proxmox_vm_qemu" "noble_server_vm" {
-  name        = "noble-server"
-  target_node = "ardemium"
-  memory      = 2048
-  cores       = 2
+  name        = var.vm["vm_name"]
+  target_node = var.node_name
+  memory      = var.vm["vm_memory"]
+  cores       = var.vm["vm_cores"]
   sockets     = 1
+
   disk {
-    size    = "10G"
+    size    = var.vm["vm_disk_size"]
     storage = "local"
     format  = "qcow2"
+    slot    = 0   # Add this slot parameter
   }
 
   network {
     model     = "virtio"
-    bridge    = "vmbr0"
+    bridge    = var.network_bridge
   }
 
   disks {
     scsi {
       scsi0 {
         cdrom {
-          iso = "local:iso/noble-server-cloudimg-amd64.img"
+          iso = "local:iso/${var.template_name}"
         }
       }
     }
@@ -28,16 +30,15 @@ resource "proxmox_vm_qemu" "noble_server_vm" {
   boot        = "order=scsi0"
   qemu_os     = "l26"
   agent       = 1
-  vmid        = 100
+  vmid        = var.vm["vm_id"]
   define_connection_info = true
 
   # Cloud-init block
   cicustom    = "local:snippets/user-data"
   ciuser      = "ubuntu"
   cipassword  = "password"
-  sshkeys     = "ssh-rsa AAAA... your-ssh-public-key"
+  sshkeys     = var.ssh_public_key
   ipconfig0   = "ip=dhcp"
 
-  # Set the VM state to "running" upon creation
   vm_state = "running"
 }
