@@ -4,16 +4,12 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   target_node = "ardemium"               # Proxmox node name
   clone       = "ubuntu-cloud-init-template"  # Clone the Cloud-Init template VM
 
-# VM hardware configuration
-  storage  = "local"
-  cores    = 2
-  sockets  = 1
-  memory   = 2048
-  disk_gb  = 10
-
-  # Cloud-Init basic configuration
-  ciuser     = "ubuntu"            # Cloud-Init user
-  cipassword = "ubuntu"            # Password for the user
-
+  storage = "local"
+  cores   = 3
+  sockets = 1
+  memory  = 2560
+  disk_gb = 4
+  nic     = "virtio"
+  bridge  = "vmbr0"
   os_type   = "cloud-init"
 }
