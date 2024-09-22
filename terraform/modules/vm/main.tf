@@ -15,16 +15,8 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   # Network configuration using Cloud-Init
   ipconfig0   = "ip=dhcp"                # Assign IP address dynamically via DHCP
 
-  # Define disk settings
+  # Define disk settings (Cloud-Init disk will be auto-configured)
   disks {
-    scsi {
-      disk0 {
-        size    = "20G"                  # Disk size
-        storage = "local-lvm"            # Storage location
-      }
-    }
-
-    # Cloud-Init disk for injecting user-data
     ide {
       ide2 {
         cloudinit {
@@ -44,5 +36,5 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   agent  = 1
 
   # Optional: Boot settings (VM will boot from the disk created via the template)
-  boot = "order=scsi0"
+  # boot = "order=scsi0"
 }
