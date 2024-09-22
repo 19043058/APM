@@ -1,7 +1,7 @@
 # Define a Proxmox QEMU Virtual Machine
 resource "proxmox_vm_qemu" "ubuntu_vm" {
   name        = "ubuntu-vm"               # VM name
-  target_node = "proxmox-node1"           # Proxmox node name
+  target_node = "ardemium"           # Proxmox node name
   memory      = 2048                      # Memory in MB
   cores       = 2                         # Number of CPU cores
   sockets     = 1                         # Number of CPU sockets
@@ -23,7 +23,7 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
   # Network interface
   network {
     bridge = "vmbr0"                      # Proxmox bridge (usually vmbr0)
-    # model  = "virtio"                   # Network card model (optional)
+    model  = "virtio"                     # Network card model (required)
   }
 
   # Boot settings
