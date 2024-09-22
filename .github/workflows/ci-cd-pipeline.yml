@@ -38,8 +38,8 @@ jobs:
           NODE_NAME: 'pve'
           STORAGE_NAME: 'local'
         run: |
-          curl -k -X POST "https://$PROXMOX_HOST:8006/api2/json/nodes/$NODE_NAME/storage/$STORAGE_NAME/upload" \
-               -H "Authorization: PVEAPIToken=$PROXMOX_TOKEN_ID=$PROXMOX_TOKEN_SECRET" \
+          curl -k -X POST "${{ env.PROXMOX_URL }}nodes/${{ env.NODE_NAME }}/storage/${{ env.STORAGE_NAME }}/upload" \
+               -H "Authorization: PVEAPIToken=${{ env.PROXMOX_TOKEN_ID }}=${{ env.PROXMOX_TOKEN_SECRET }}" \
                -F content=vztmpl \
                -F filename=@nixos.qcow2
 
