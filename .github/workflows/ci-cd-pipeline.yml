@@ -33,9 +33,9 @@ jobs:
       # Echo task for debugging
       - name: Debug: Show Curl Command
         env:
-          PROXMOX_URL: "https://mock-proxmox-url:8006/api2/json"
-          PROXMOX_TOKEN_ID: "terraform-prov@pve!mocktoken"
-          PROXMOX_TOKEN_SECRET: "mocksecret"
+          PROXMOX_URL: ${{ secrets.PROXMOX_URL }}
+          PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
+          PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
           NODE_NAME: 'ardemium'
           STORAGE_NAME: 'local'
         run: |
