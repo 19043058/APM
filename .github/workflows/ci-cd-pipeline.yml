@@ -35,7 +35,7 @@ jobs:
           PROXMOX_HOST: ${{ secrets.PROXMOX_HOST }}
           PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
           PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-          NODE_NAME: 'pve'
+          NODE_NAME: 'ardemium'
           STORAGE_NAME: 'local'
         run: |
           curl -k -X POST "${{ env.PROXMOX_URL }}nodes/${{ env.NODE_NAME }}/storage/${{ env.STORAGE_NAME }}/upload" \
