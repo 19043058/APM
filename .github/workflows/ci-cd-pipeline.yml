@@ -30,8 +30,20 @@ jobs:
           NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/74e2faf5965a12e8fa5cff799b1b19c6cd26b0e3.tar.gz \
           nix-shell -p nixos-generators --run "nixos-generate --format iso --configuration ./nixos/configuration.nix -o ./nixos.iso"
 
-      - name: Install Proxmoxer
-        run: pip install proxmoxer
+      # Echo task for debugging
+      - name: Debug: Show Curl Command
+        env:
+          PROXMOX_URL: "https://mock-proxmox-url:8006/api2/json"
+          PROXMOX_TOKEN_ID: "terraform-prov@pve!mocktoken"
+          PROXMOX_TOKEN_SECRET: "mocksecret"
+          NODE_NAME: 'ardemium'
+          STORAGE_NAME: 'local'
+        run: |
+          echo "Curl command to be executed:"
+          echo "curl --verbose -k -X POST \"$PROXMOX_URL/nodes/$NODE_NAME/storage/$STORAGE_NAME/upload\" \\"
+          echo "  -H 'Authorization: PVEAPIToken=$PROXMOX_TOKEN_ID=$PROXMOX_TOKEN_SECRET' \\"
+          echo "  -F content=iso \\"
+          echo "  -F filename=@nixos.iso"
 
       # Upload ISO Image to Proxmox
       - name: Upload ISO Image to Proxmox
@@ -42,20 +54,10 @@ jobs:
           NODE_NAME: 'ardemium'
           STORAGE_NAME: 'local'
         run: |
-          curl --verbose -k -X POST "${{env.PROXMOX_URL}}/nodes/${{env.NODE_NAME}}/storage/${{env.STORAGE_NAME}}/upload" \
-          -H 'Authorization: PVEAPIToken='"${{env.PROXMOX_TOKEN_ID}}"'='"${{env.PROXMOX_TOKEN_SECRET}}" \
+          curl --verbose -k -X POST "$PROXMOX_URL/nodes/$NODE_NAME/storage/$STORAGE_NAME/upload" \
+          -H "Authorization: PVEAPIToken=$PROXMOX_TOKEN_ID=$PROXMOX_TOKEN_SECRET" \
           -F content=iso \
           -F filename=@nixos.iso
-
-      - name: Create Proxmox VM Template
-        env:
-          PROXMOX_URL: ${{ secrets.PROXMOX_URL }}
-          PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
-          PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-          NODE_NAME: 'ardemium'
-          STORAGE_NAME: 'local'
-        run: |
-          python proxmox_template.py
 
   terraform:
     name: Terraform Provisioning
@@ -87,7 +89,7 @@ jobs:
             -var="proxmox_token_id=${{ env.PROXMOX_TOKEN_ID }}" \
             -var="proxmox_token_secret=${{ env.PROXMOX_TOKEN_SECRET }}" \
             -var="ssh_public_key=${{ env.SSH_PUBLIC_KEY }}" \
-            -var="template_name=nixos-template" \
+            -var="template_name=nixos.iso" \
             -var="node_name=pve" \
             -var="network_bridge=vmbr0" \
             -var='vm={"vm_id":100,"vm_name":"nginx-server","vm_memory":2048,"vm_cores":2,"vm_disk_size":"20G"}'
