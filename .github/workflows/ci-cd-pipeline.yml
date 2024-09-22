@@ -17,7 +17,7 @@ jobs:
         uses: cachix/install-nix-action@v16
 
       - name: Install nixos-generators
-        run: nix-env -iA nixos-generators -f https://github.com/nix-community/nixos-generators/archive/master.tar.gz
+        run: nix-env -f https://github.com/nix-community/nixos-generators/archive/master.tar.gz -i
 
       - name: Build NixOS QCOW2 Image
         run: nixos-generate -f qcow -c ./nixos/configuration.nix -o ./nixos.qcow2
@@ -30,8 +30,8 @@ jobs:
           PROXMOX_HOST: ${{ secrets.PROXMOX_HOST }}
           PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
           PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-          NODE_NAME: 'pve'  # Replace with your node name
-          STORAGE_NAME: 'local'  # Replace with your storage name
+          NODE_NAME: 'pve'
+          STORAGE_NAME: 'local'
         run: |
           curl -k -X POST "https://$PROXMOX_HOST:8006/api2/json/nodes/$NODE_NAME/storage/$STORAGE_NAME/upload" \
                -H "Authorization: PVEAPIToken=$PROXMOX_TOKEN_ID=$PROXMOX_TOKEN_SECRET" \
@@ -43,13 +43,14 @@ jobs:
           PROXMOX_HOST: ${{ secrets.PROXMOX_HOST }}
           PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
           PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
-          NODE_NAME: 'pve'  # Replace with your node name
-          STORAGE_NAME: 'local'  # Replace with your storage name
+          NODE_NAME: 'pve'
+          STORAGE_NAME: 'local'
         run: |
           python proxmox_template.py
 
   terraform:
     name: Terraform Provisioning
+    needs: build-and-deploy
     runs-on: ubuntu-latest
     env:
       TF_LOG: ERROR
