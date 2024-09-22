@@ -30,7 +30,16 @@ jobs:
           NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/74e2faf5965a12e8fa5cff799b1b19c6cd26b0e3.tar.gz \
           nix-shell -p nixos-generators --run "nixos-generate --format iso --configuration ./nixos/configuration.nix -o ./nixos.iso"
 
-
+      # Upload ISO Image to Proxmox
+      - name: Upload ISO Image to Proxmox
+        env:
+          PROXMOX_URL: ${{ secrets.PROXMOX_URL }}
+          PROXMOX_TOKEN_ID: ${{ secrets.PROXMOX_TOKEN_ID }}
+          PROXMOX_TOKEN_SECRET: ${{ secrets.PROXMOX_TOKEN_SECRET }}
+          NODE_NAME: 'ardemium'
+          STORAGE_NAME: 'local'
+        run: |
+          curl --verbose -k -X POST "https://145.53.24.241:8006/api2/json/nodes/ardemium/storage/local/upload" -H 'Authorization: PVEAPIToken=terraform-prov@pve!mytoken=e9a45187-2967-4879-b451-c75b2214943f' -F content=iso -F filename=@test.iso
 
 
   terraform:
